@@ -3,7 +3,12 @@ package si.fri.rso.shoppingcart.models.entities;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "shopping_cart_products")
+@Table(
+    name = "shopping_cart_products",
+    uniqueConstraints = {
+        @UniqueConstraint(name = "UniqueShoppingCartProduct", columnNames = {"shopping_cart_id", "product_id"}),
+    }
+)
 public class ShoppingCartProductEntity {
 
     @Id
