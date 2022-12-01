@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="http://xmlns.jcp.org/xml/ns/persistence" version="2.1">
+    <persistence-unit name="shopping-cart-jpa" transaction-type="RESOURCE_LOCAL">
+        <non-jta-data-source>jdbc/ShoppingCartsDS</non-jta-data-source>
+
+        <class>si.fri.rso.shoppingcart.models.entities.ShoppingCartEntity</class>
+        <class>si.fri.rso.shoppingcart.models.entities.ShoppingCartProductEntity</class>
+        <class>si.fri.rso.shoppingcart.models.converters.InstantAtributeConverter</class>
+        <class>si.fri.rso.shoppingcart.models.converters.ShoppingCartConverter</class>
+        <class>si.fri.rso.shoppingcart.models.converters.ShoppingCartProductConverter</class>
+
+        <properties>
+            <property name="javax.persistence.schema-generation.database.action" value="drop-and-create"/>
+            <property name="javax.persistence.schema-generation.create-source" value="metadata"/>
+            <property name="javax.persistence.schema-generation.drop-source" value="metadata"/>
+        </properties>
+    </persistence-unit>
+</persistence>
