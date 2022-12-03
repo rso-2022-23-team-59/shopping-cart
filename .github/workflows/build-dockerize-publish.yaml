@@ -2,9 +2,9 @@ name: build with Maven, package as Docker image and publish it to Docker Hub
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "main" ]
 
 jobs:
   build:
