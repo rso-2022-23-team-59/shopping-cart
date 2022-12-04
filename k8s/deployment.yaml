@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shopping-cart-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shopping-cart
+  template:
+    metadata:
+      labels:
+        app: shopping-cart
+    spec:
+      containers:
+        - image: metatheory/shopping-cart:2022-12-03-14-59-56
+          name: shopping-cart
+          env:
+            - name: KUMULUZEE_DATASOURCES0_CONNECTIONURL
+              value: jdbc:postgresql://mouse.db.elephantsql.com:5432/sqpivtck
+            - name: KUMULUZEE_DATASOURCES0_USERNAME
+              value: sqpivtck
+            - name: KUMULUZEE_DATASOURCES0_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: database-password
+                  key: KUMULUZEE_DATASOURCES0_PASSWORD
+          ports:
+            - containerPort: 8080
+              name: cart-port
+              protocol: TCP
+          imagePullPolicy: IfNotPresent
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: shopping-cart
+spec:
+  type: NodePort
+  ports:
+    - port: 8080
+      protocol: TCP
+      targetPort: cart-port
+  selector:
+    app: shopping-cart
