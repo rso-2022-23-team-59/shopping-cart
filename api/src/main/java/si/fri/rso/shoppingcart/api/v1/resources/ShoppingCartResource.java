@@ -23,9 +23,9 @@ import java.util.logging.Logger;
 @Path("/shopping-carts")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-public class ProductResource {
+public class ShoppingCartResource {
 
-    private Logger log = Logger.getLogger(ProductResource.class.getName());
+    private Logger log = Logger.getLogger(ShoppingCartResource.class.getName());
 
     @Inject
     private ShoppingCartBean shoppingCartBean;
@@ -65,8 +65,8 @@ public class ProductResource {
         return Response.status(Response.Status.OK).entity(shoppingCart).build();
     }
 
-    @POST
-    @Path("/{shoppingCartId}/add")
+    @PUT
+    @Path("/{shoppingCartId}")
     public Response insertToShoppingCart(@PathParam("shoppingCartId") Integer shoppingCartId, ShoppingCartProduct product) {
         // Check if received JSON contains at least product id. If not, return an exception.
         if (product.getProductId() == null) {
