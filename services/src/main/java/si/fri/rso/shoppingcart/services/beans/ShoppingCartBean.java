@@ -1,21 +1,16 @@
 package si.fri.rso.shoppingcart.services.beans;
 
+import si.fri.rso.shoppingcart.lib.ShoppingCart;
+import si.fri.rso.shoppingcart.lib.ShoppingCartProduct;
+import si.fri.rso.shoppingcart.models.converters.ShoppingCartConverter;
+import si.fri.rso.shoppingcart.models.entities.ShoppingCartEntity;
+import si.fri.rso.shoppingcart.models.entities.ShoppingCartProductEntity;
+
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
-import javax.persistence.TypedQuery;
 import javax.ws.rs.NotFoundException;
-import javax.ws.rs.core.UriInfo;
-import java.util.List;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
-
-import com.kumuluz.ee.rest.beans.QueryParameters;
-import com.kumuluz.ee.rest.utils.JPAUtils;
-
-import si.fri.rso.shoppingcart.lib.ShoppingCart;
-import si.fri.rso.shoppingcart.models.converters.ShoppingCartConverter;
-import si.fri.rso.shoppingcart.models.entities.ShoppingCartEntity;
 
 
 @RequestScoped
@@ -31,6 +26,46 @@ public class ShoppingCartBean {
 
         if (shoppingCartEntity == null) {
             throw new NotFoundException();
+        }
+
+        return ShoppingCartConverter.toDto(shoppingCartEntity);
+    }
+
+    public ShoppingCart createShoppingCart() {
+        ShoppingCartEntity shoppingCartEntity = new ShoppingCartEntity();
+        beginTx();
+        em.persist(shoppingCartEntity);
+        commitTx();
+        return ShoppingCartConverter.toDto(shoppingCartEntity);
+    }
+
+    public ShoppingCart insertToShoppingCart(Integer shoppingCartId, ShoppingCartProduct product) {
+
+        // Check if shopping cart actually exists. If not, exit.
+        ShoppingCartEntity shoppingCartEntity = em.find(ShoppingCartEntity.class, shoppingCartId);
+        if (shoppingCartEntity == null) {
+            return null;
+        }
+
+        // If quantity is not set, it will default to 1.
+        int quantity = product.getQuantity() == null ? 1 : product.getQuantity();
+
+        // Create a new product entity that will be inserted into database.
+        // Note that we don't need to set shopping cart, as this will be done
+        // automatically when product is inserted into shopping cart.
+        ShoppingCartProductEntity productEntity = new ShoppingCartProductEntity();
+        productEntity.setProductId(product.getProductId());
+        productEntity.setQuantity(quantity);
+
+        // Add product into shopping cart.
+        shoppingCartEntity.getProducts().add(productEntity);
+
+        try {
+            beginTx();
+            em.persist(shoppingCartEntity);
+            commitTx();
+        } catch (Exception e) {
+            rollbackTx();
         }
 
         return ShoppingCartConverter.toDto(shoppingCartEntity);

@@ -15,8 +15,9 @@ public class ShoppingCartProductEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "shopping_cart_id")
-    private Integer shoppingCartId;
+    @ManyToOne
+    @JoinColumn(name="shopping_cart_id")
+    private ShoppingCartEntity shoppingCart;
 
     @Column(name = "product_id")
     private Integer productId;
@@ -32,12 +33,12 @@ public class ShoppingCartProductEntity {
         this.id = id;
     }
 
-    public Integer getShoppingCartId() {
-        return shoppingCartId;
+    public ShoppingCartEntity getShoppingCart() {
+        return shoppingCart;
     }
 
-    public void setShoppingCartId(Integer shoppingCartId) {
-        this.shoppingCartId = shoppingCartId;
+    public void setShoppingCart(ShoppingCartEntity shoppingCart) {
+        this.shoppingCart = shoppingCart;
     }
 
     public Integer getProductId() {

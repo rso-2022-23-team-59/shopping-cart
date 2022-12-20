@@ -31,7 +31,7 @@ public class ShoppingCartConverter {
         entity.setUpdatedAt(dto.getUpdatedAt());
 
         // Convert all ShoppingCartProduct objects to ShoppingCartProductEntity objects.
-        List<ShoppingCartProductEntity> shoppingCartProductEntities = dto.getProducts().stream().map(ShoppingCartProductConverter::toEntity).toList();
+        List<ShoppingCartProductEntity> shoppingCartProductEntities = dto.getProducts().stream().map(shoppingCartProduct -> ShoppingCartProductConverter.toEntity(shoppingCartProduct, entity)).toList();
         entity.setProducts(shoppingCartProductEntities);
 
         return entity;

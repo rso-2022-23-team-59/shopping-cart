@@ -21,8 +21,7 @@ public class ShoppingCartEntity {
     @Column(name = "updated_at")
     private Instant updatedAt;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "shopping_cart_id")
+    @OneToMany(mappedBy="shoppingCart", cascade = CascadeType.ALL)
     private List<ShoppingCartProductEntity> products;
 
     public Integer getId() {

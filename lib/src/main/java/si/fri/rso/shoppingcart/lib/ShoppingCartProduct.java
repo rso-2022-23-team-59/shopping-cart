@@ -3,7 +3,6 @@ package si.fri.rso.shoppingcart.lib;
 public class ShoppingCartProduct {
 
     private Integer id;
-    private Integer shoppingCartId;
     private Integer productId;
     private Integer quantity;
 
@@ -13,14 +12,6 @@ public class ShoppingCartProduct {
 
     public void setId(Integer id) {
         this.id = id;
-    }
-
-    public Integer getShoppingCartId() {
-        return shoppingCartId;
-    }
-
-    public void setShoppingCartId(Integer shoppingCartId) {
-        this.shoppingCartId = shoppingCartId;
     }
 
     public Integer getProductId() {
