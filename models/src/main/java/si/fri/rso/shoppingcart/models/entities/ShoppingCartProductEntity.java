@@ -9,13 +9,19 @@ import javax.persistence.*;
         @UniqueConstraint(name = "UniqueShoppingCartProduct", columnNames = {"shopping_cart_id", "product_id"}),
     }
 )
+@NamedQueries({
+    @NamedQuery(
+        name="ShoppingCartProductEntity.find",
+        query="SELECT product FROM ShoppingCartProductEntity product WHERE product.productId = :productId AND product.shoppingCart.id = :shoppingCartId"
+    ),
+})
 public class ShoppingCartProductEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="shopping_cart_id")
     private ShoppingCartEntity shoppingCart;
 

@@ -9,6 +9,8 @@ import si.fri.rso.shoppingcart.models.entities.ShoppingCartProductEntity;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+import javax.persistence.TypedQuery;
 import javax.ws.rs.NotFoundException;
 import java.util.logging.Logger;
 
@@ -47,21 +49,68 @@ public class ShoppingCartBean {
             return null;
         }
 
-        // If quantity is not set, it will default to 1.
-        int quantity = product.getQuantity() == null ? 1 : product.getQuantity();
+        // Check if this item is already in shopping cart.
+        TypedQuery<ShoppingCartProductEntity> query = em.createNamedQuery("ShoppingCartProductEntity.find", ShoppingCartProductEntity.class);
+        query.setParameter("productId", product.getProductId());
+        query.setParameter("shoppingCartId", shoppingCartId);
 
-        // Create a new product entity that will be inserted into database.
-        // Note that we don't need to set shopping cart, as this will be done
-        // automatically when product is inserted into shopping cart.
-        ShoppingCartProductEntity productEntity = new ShoppingCartProductEntity();
-        productEntity.setProductId(product.getProductId());
+        // The database has a UNIQUE constraint on (product_id, shopping_cart_id), so there will be
+        // at most one result in database.
+        ShoppingCartProductEntity existingProduct = null;
+        try {
+            existingProduct = query.getSingleResult();
+        } catch (NoResultException e) {
+            // Do nothing, this will be handled below.
+        }
+
+        // Compute the quantity: if the quantity is not set, set it to 1.
+        // Otherwise, the quantity should be 0 or a positive value.
+        int quantity = 0;
+        if (product.getQuantity() == null) {
+            quantity = 1;
+        } else {
+            // Make sure the quantity is non-negative (0 or more) and not null.
+            quantity = Math.max(product.getQuantity(), quantity);
+        }
+
+        // Perform an operation based on the request data:
+        //   * if the product is already in the shopping cart and the new quantity is 0, remove it.
+        //   * if the product is already in the shopping cart, update its quantity
+        //   * if the product is not in the shopping cart yet, add it.
+        if (existingProduct != null && quantity == 0) {
+            // Set item quantity to 0 - remove product from database.
+            try {
+                beginTx();
+                shoppingCartEntity.getProducts().remove(existingProduct);
+                em.remove(existingProduct);
+                em.persist(shoppingCartEntity);
+                commitTx();
+            } catch (Exception e) {
+                rollbackTx();
+            }
+            return ShoppingCartConverter.toDto(shoppingCartEntity);
+        }
+
+        ShoppingCartProductEntity productEntity = existingProduct;
+
+        // If the product is not yet in database, create a new entity and set its fields.
+        if (existingProduct == null) {
+            // Create a new product
+            productEntity = new ShoppingCartProductEntity();
+            productEntity.setProductId(product.getProductId());
+            productEntity.setShoppingCart(shoppingCartEntity);
+
+            // Add product into shopping cart.
+            shoppingCartEntity.getProducts().add(productEntity);
+        }
+
+        // Update quantity for an existing or new object.
         productEntity.setQuantity(quantity);
 
-        // Add product into shopping cart.
-        shoppingCartEntity.getProducts().add(productEntity);
-
+        // Persist the object in database.
         try {
             beginTx();
+            em.persist(productEntity);
             em.persist(shoppingCartEntity);
             commitTx();
         } catch (Exception e) {
