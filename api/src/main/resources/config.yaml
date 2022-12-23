@@ -19,6 +19,15 @@ kumuluzee:
       password: postgres
       max-pool-size: 20
 
+  # Database health check - check if datasource is available.
+  # See https://github.com/kumuluz/kumuluzee-health#datasourcehealthcheck
+  # for more information.
+  health:
+    checks:
+      data-source-health-check:
+        jndi-name: jdbc/ShoppingCartsDS
+        type: liveness
+
   rest-properties:
     product-catalog-base-url: "http://localhost:8080"
 
