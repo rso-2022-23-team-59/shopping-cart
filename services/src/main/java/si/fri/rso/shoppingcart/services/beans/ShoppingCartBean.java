@@ -5,6 +5,7 @@ import si.fri.rso.shoppingcart.lib.ShoppingCartProduct;
 import si.fri.rso.shoppingcart.models.converters.ShoppingCartConverter;
 import si.fri.rso.shoppingcart.models.entities.ShoppingCartEntity;
 import si.fri.rso.shoppingcart.models.entities.ShoppingCartProductEntity;
+import si.fri.rso.shoppingcart.services.beans.configuration.RestProperties;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
@@ -12,6 +13,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.TypedQuery;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.core.Response;
 import java.util.logging.Logger;
 
 
@@ -19,6 +22,14 @@ import java.util.logging.Logger;
 public class ShoppingCartBean {
 
     private Logger log = Logger.getLogger(ShoppingCartBean.class.getName());
+
+    // TODO: Discover product catalog service using "com.kumuluz.ee.discovery" library
+    // @Inject
+    // @DiscoverService(value = "product-catalog-microservice", environment = "dev", version = "*")
+    // private Optional<String> productCatalogServicePath;
+
+    @Inject
+    private RestProperties properties;
 
     @Inject
     private EntityManager em;
@@ -47,6 +58,24 @@ public class ShoppingCartBean {
         ShoppingCartEntity shoppingCartEntity = em.find(ShoppingCartEntity.class, shoppingCartId);
         if (shoppingCartEntity == null) {
             return null;
+        }
+
+        // If the product catalog service is enabled, we should check if the product that we are trying
+        // to add to shopping cart, actually exists. Perform a web request to [product-catalog] microservice.
+        // The product catalog service is enabled when the following key is set in Consul config server.
+        // environments/dev/services/shopping-cart-microservice/1.0.0/config/rest-properties/product-catalog-base-url
+        String baseUrl = properties.getProductCatalogBaseUrl();
+        if (baseUrl != null) {
+            String productUrl = baseUrl + "/v1/products/" + product.getProductId();
+            Response productResponse = ClientBuilder.newClient().target(productUrl).request().get();
+
+            if (!productResponse.getStatusInfo().getFamily().equals(Response.Status.Family.SUCCESSFUL)) {
+                log.warning("Remote server '" + properties.getProductCatalogBaseUrl() + "' responded with status " + productResponse.getStatus());
+                throw new IllegalArgumentException("Product does not exist");
+            }
+        } else {
+            // The key is not set in Consul config server. Warn the user and continue.
+            log.warning("The 'rest-properties/product-catalog-base-url' value is not set. The service will not check if product exists before adding it to shopping cart.");
         }
 
         // Check if this item is already in shopping cart.

@@ -70,15 +70,21 @@ public class ShoppingCartResource {
     public Response insertToShoppingCart(@PathParam("shoppingCartId") Integer shoppingCartId, ShoppingCartProduct product) {
         // Check if received JSON contains at least product id. If not, return an exception.
         if (product.getProductId() == null) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        // Insert product into shopping cart (in database).
+        ShoppingCart updatedCart = null;
+        try {
+            updatedCart = shoppingCartBean.insertToShoppingCart(shoppingCartId, product);
+        } catch (IllegalArgumentException exception) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        // Check if a product with received id actually exists.
-        // To do this, we should perform a web request to [product-catalog] microservice.
-        // TODO: Check if product actually exists.
+        if (updatedCart == null) {
+            return Response.status(Response.Status.EXPECTATION_FAILED).build();
+        }
 
-        // Insert product into shopping cart (in database).
-        ShoppingCart updatedCart = shoppingCartBean.insertToShoppingCart(shoppingCartId, product);
         return Response.status(Response.Status.OK).entity(updatedCart).build();
     }
 
