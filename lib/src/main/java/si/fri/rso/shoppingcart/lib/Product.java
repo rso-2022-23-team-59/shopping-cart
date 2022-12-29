@@ -1,12 +1,11 @@
 package si.fri.rso.shoppingcart.lib;
 
-public class ShoppingCartProduct {
+public class Product {
 
     private Integer id;
-    private Integer productId;
     private String name;
     private String image;
-    private Integer quantity;
+    private String description;
 
     public Integer getId() {
         return id;
@@ -14,22 +13,6 @@ public class ShoppingCartProduct {
 
     public void setId(Integer id) {
         this.id = id;
-    }
-
-    public Integer getProductId() {
-        return productId;
-    }
-
-    public void setProductId(Integer productId) {
-        this.productId = productId;
-    }
-
-    public Integer getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(Integer quantity) {
-        this.quantity = quantity;
     }
 
     public String getName() {
@@ -46,5 +29,13 @@ public class ShoppingCartProduct {
 
     public void setImage(String image) {
         this.image = image;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

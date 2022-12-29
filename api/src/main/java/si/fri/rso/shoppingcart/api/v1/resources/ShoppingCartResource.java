@@ -7,6 +7,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
+import si.fri.rso.shoppingcart.lib.Product;
 import si.fri.rso.shoppingcart.lib.ShoppingCart;
 import si.fri.rso.shoppingcart.lib.ShoppingCartProduct;
 import si.fri.rso.shoppingcart.services.beans.ShoppingCartBean;
@@ -14,10 +15,12 @@ import si.fri.rso.shoppingcart.services.beans.ShoppingCartBean;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.core.*;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.logging.Logger;
 
 @ApplicationScoped
@@ -57,6 +60,7 @@ public class ShoppingCartResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
+        loadAdditionalProductData(shoppingCart);
         return Response.status(Response.Status.OK).entity(shoppingCart).build();
     }
 
@@ -87,7 +91,29 @@ public class ShoppingCartResource {
             return Response.status(Response.Status.EXPECTATION_FAILED).build();
         }
 
+        loadAdditionalProductData(updatedCart);
         return Response.status(Response.Status.OK).entity(updatedCart).build();
+    }
+
+    private void loadAdditionalProductData(ShoppingCart shoppingCart) {
+
+        // TODO: Add fault tolerance
+        List<Integer> productIds = shoppingCart.getProducts().stream().map(ShoppingCartProduct::getProductId).toList();
+        String url = "http://localhost:8080/v1/products?filter=id:IN:" + productIds.toString().replace(" ", "");
+        System.out.println(url);
+        List<Product> products = ClientBuilder.newClient().target(url).request().get(new GenericType<List<Product>>() {});
+        HashMap<Integer, Product> productMap = new HashMap<>();
+        for (Product product : products) {
+            productMap.put(product.getId(), product);
+        }
+
+        for (ShoppingCartProduct product : shoppingCart.getProducts()) {
+            Product additionalProductInformation = productMap.get(product.getProductId());
+            if (additionalProductInformation == null) continue;
+
+            product.setName(additionalProductInformation.getName());
+            product.setImage(additionalProductInformation.getImage());
+        }
     }
 
 }
