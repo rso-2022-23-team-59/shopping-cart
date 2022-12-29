@@ -12,11 +12,22 @@ public class RestProperties {
     @ConfigValue(watch = true)
     private String productCatalogBaseUrl;
 
+    @ConfigValue(watch = true)
+    private String storeCatalogBaseUrl;
+
     public String getProductCatalogBaseUrl() {
         return productCatalogBaseUrl;
     }
 
     public void setProductCatalogBaseUrl(String productCatalogBaseUrl) {
         this.productCatalogBaseUrl = productCatalogBaseUrl;
+    }
+
+    public String getStoreCatalogBaseUrl() {
+        return storeCatalogBaseUrl;
+    }
+
+    public void setStoreCatalogBaseUrl(String storeCatalogBaseUrl) {
+        this.storeCatalogBaseUrl = storeCatalogBaseUrl;
     }
 }

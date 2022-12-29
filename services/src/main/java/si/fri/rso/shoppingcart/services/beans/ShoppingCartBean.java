@@ -153,19 +153,53 @@ public class ShoppingCartBean {
     }
 
     private List<ProductPrice> getSingleProductPrice(Integer productId) {
-        String url = "http://localhost:8080/v1/product-stores/" + productId + "/prices";
-        List<ProductPrice> prices = ClientBuilder.newClient().target(url).request().get(new GenericType<>() {});
+        String productCatalogBaseUrl = properties.getProductCatalogBaseUrl();
+        List<ProductPrice> prices = ClientBuilder
+                .newClient()
+                .target(productCatalogBaseUrl)
+                .path("/v1/product-stores/" + productId + "/prices")
+                .request()
+                .get(new GenericType<>() {});
         return prices;
     }
 
     private List<Store> getStores(List<Integer> storeIds) {
-        String url = "http://localhost:8081/v1/stores";
+        String storeCatalogBaseUrl = properties.getStoreCatalogBaseUrl();
         List<Store> stores = ClientBuilder
                 .newClient()
-                .target(url).queryParam("filter", "id:IN:" + storeIds.toString())
+                .target(storeCatalogBaseUrl)
+                .path("/v1/stores")
+                .queryParam("filter", "id:IN:" + storeIds.toString())
                 .request()
                 .get(new GenericType<>() {});
         return stores;
+    }
+
+    // TODO: Add fault tolerance
+    public void loadAdditionalProductData(ShoppingCart shoppingCart) {
+        String productCatalogBaseUrl = properties.getProductCatalogBaseUrl();
+
+        List<Integer> productIds = shoppingCart.getProducts().stream().map(ShoppingCartProduct::getProductId).toList();
+        List<Product> products = ClientBuilder
+                .newClient()
+                .target(productCatalogBaseUrl)
+                .path("/v1/products")
+                .queryParam("filter", "id:IN:" + productIds)
+                .request()
+                .get(new GenericType<>(){});
+
+        HashMap<Integer, Product> productMap = new HashMap<>();
+        for (Product product : products) {
+            productMap.put(product.getId(), product);
+        }
+
+        for (ShoppingCartProduct product : shoppingCart.getProducts()) {
+            Product additionalProductInformation = productMap.get(product.getProductId());
+            if (additionalProductInformation == null) continue;
+
+            product.setName(additionalProductInformation.getName());
+            product.setImage(additionalProductInformation.getImage());
+        }
     }
 
     // TODO: Add fault tolerance
