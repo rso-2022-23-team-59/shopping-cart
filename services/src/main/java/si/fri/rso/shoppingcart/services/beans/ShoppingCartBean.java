@@ -152,7 +152,7 @@ public class ShoppingCartBean {
         return ShoppingCartConverter.toDto(shoppingCartEntity);
     }
 
-    private List<ProductPrice> getSingleProductPrice(Integer productId) {
+    private List<ProductPrice> getSingleProductPrice(Integer productId, Integer quantity) {
         String productCatalogBaseUrl = properties.getProductCatalogBaseUrl();
         List<ProductPrice> prices = ClientBuilder
                 .newClient()
@@ -160,6 +160,12 @@ public class ShoppingCartBean {
                 .path("/v1/product-stores/" + productId + "/prices")
                 .request()
                 .get(new GenericType<>() {});
+
+        // Multiply all prices with quantity.
+        for (ProductPrice price : prices) {
+            price.setQuantity(quantity);
+        }
+
         return prices;
     }
 
@@ -229,18 +235,19 @@ public class ShoppingCartBean {
             return null;
         }
 
-        // Get ids of all products in shopping cart.
-        List<Integer> shoppingCartProductIds = shoppingCartEntity.getProducts().stream()
-                .map(ShoppingCartProductEntity::getProductId).toList();
+        // Get all products in shopping cart.
+        List<ShoppingCartProductEntity> shoppingCartProducts = shoppingCartEntity.getProducts().stream().toList();
 
         // For each product, get a list of the latest prices in all shops. Then, create a mapping
         // between [storeId] -> list of [ProductPrice] in that shop
         HashMap<Integer, List<ProductPrice>> shopPrices = new HashMap<>();
-        for (Integer productId : shoppingCartProductIds) {
+        for (ShoppingCartProductEntity entity : shoppingCartProducts) {
+            Integer productId = entity.getProductId();
+            Integer quantity = entity.getQuantity();
 
             // Here, a new GET request is performed for each product in shopping cart.
             // This can potentially be a bottleneck and should be improved in the future.
-            List<ProductPrice> prices = getSingleProductPrice(productId);
+            List<ProductPrice> prices = getSingleProductPrice(productId, quantity);
             for (ProductPrice price : prices) {
                 if (!shopPrices.containsKey(price.getStoreId())) {
                     shopPrices.put(price.getStoreId(), new ArrayList<>());

@@ -38,7 +38,7 @@ public class StorePrices {
     public Double getTotalPrice() {
         double totalPrice = 0.0;
         for (ProductPrice price : this.prices) {
-            Double productPrice = price.getPrice();
+            Double productPrice = price.getTotalPrice();
             if (productPrice == null) continue;
             totalPrice += productPrice;
         }

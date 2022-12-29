@@ -5,6 +5,7 @@ public class ProductPrice {
     private Integer storeId;
     private Product product;
     private Double price;
+    private Integer quantity;
     private String currency;
 
     public String getCurrency() {
@@ -38,4 +39,19 @@ public class ProductPrice {
     public void setProduct(Product product) {
         this.product = product;
     }
+
+    public Integer getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
+    }
+
+    public Double getTotalPrice() {
+        if (price == null) return null;
+        if (quantity == null) return price;
+        return price * quantity;
+    }
+
 }
