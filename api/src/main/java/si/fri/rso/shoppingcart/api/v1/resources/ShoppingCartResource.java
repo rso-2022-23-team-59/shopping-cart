@@ -10,6 +10,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import si.fri.rso.shoppingcart.lib.Product;
 import si.fri.rso.shoppingcart.lib.ShoppingCart;
 import si.fri.rso.shoppingcart.lib.ShoppingCartProduct;
+import si.fri.rso.shoppingcart.lib.StorePrices;
 import si.fri.rso.shoppingcart.services.beans.ShoppingCartBean;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -17,8 +18,6 @@ import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.*;
-import java.net.URI;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
@@ -40,15 +39,15 @@ public class ShoppingCartResource {
 
     @Operation(description = "Get data for single shopping cart.", summary = "Get data for single shopping cart")
     @APIResponses({
-        @APIResponse(
-            responseCode = "200",
-            description = "Shopping cart information.",
-            content = @Content(schema = @Schema(implementation = ShoppingCart.class))
-        ),
-        @APIResponse(
-            responseCode = "404",
-            description = "Shopping cart could not be found."
-        ),
+            @APIResponse(
+                    responseCode = "200",
+                    description = "Shopping cart information.",
+                    content = @Content(schema = @Schema(implementation = ShoppingCart.class))
+            ),
+            @APIResponse(
+                    responseCode = "404",
+                    description = "Shopping cart could not be found."
+            ),
     })
     @GET
     @Path("/{shoppingCartId}")
@@ -101,7 +100,8 @@ public class ShoppingCartResource {
         List<Integer> productIds = shoppingCart.getProducts().stream().map(ShoppingCartProduct::getProductId).toList();
         String url = "http://localhost:8080/v1/products?filter=id:IN:" + productIds.toString().replace(" ", "");
         System.out.println(url);
-        List<Product> products = ClientBuilder.newClient().target(url).request().get(new GenericType<List<Product>>() {});
+        List<Product> products = ClientBuilder.newClient().target(url).request().get(new GenericType<List<Product>>() {
+        });
         HashMap<Integer, Product> productMap = new HashMap<>();
         for (Product product : products) {
             productMap.put(product.getId(), product);
@@ -114,6 +114,13 @@ public class ShoppingCartResource {
             product.setName(additionalProductInformation.getName());
             product.setImage(additionalProductInformation.getImage());
         }
+    }
+
+    @GET
+    @Path("/{shoppingCartId}/prices")
+    public Response getShoppingCartPrices(@PathParam("shoppingCartId") Integer shoppingCartId) {
+        List<StorePrices> storePriceList = shoppingCartBean.getProductPrices(shoppingCartId);
+        return Response.ok().entity(storePriceList).build();
     }
 
 }
