@@ -13,18 +13,22 @@ spec:
         app: shopping-cart
     spec:
       containers:
-        - image: metatheory/shopping-cart:2022-12-03-14-59-56
+        - image: metatheory/shopping-cart:2022-12-29-23-12-33
           name: shopping-cart
           env:
             - name: KUMULUZEE_DATASOURCES0_CONNECTIONURL
-              value: jdbc:postgresql://mouse.db.elephantsql.com:5432/dolhpskw
+              value: jdbc:postgresql://snuffleupagus.db.elephantsql.com:5432/pkesgrkv
             - name: KUMULUZEE_DATASOURCES0_USERNAME
-              value: dolhpskw
+              value: pkesgrkv
             - name: KUMULUZEE_DATASOURCES0_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: shopping-cart-database-password
                   key: KUMULUZEE_DATASOURCES0_PASSWORD
+            - name: RESTPROPERTIES_PRODUCTCATALOGBASEURL
+              value: http://product-catalog:8080
+            - name: RESTPROPERTIES_STORECATALOGBASEURL
+              value: http://store-catalog:8080
           ports:
             - containerPort: 8080
               name: cart-port
