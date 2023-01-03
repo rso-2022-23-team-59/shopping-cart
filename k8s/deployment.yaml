@@ -17,14 +17,18 @@ spec:
           name: shopping-cart
           env:
             - name: KUMULUZEE_DATASOURCES0_CONNECTIONURL
-              value: jdbc:postgresql://mouse.db.elephantsql.com:5432/dolhpskw
+              value: jdbc:postgresql://snuffleupagus.db.elephantsql.com:5432/pkesgrkv
             - name: KUMULUZEE_DATASOURCES0_USERNAME
-              value: dolhpskw
+              value: pkesgrkv
             - name: KUMULUZEE_DATASOURCES0_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: shopping-cart-database-password
                   key: KUMULUZEE_DATASOURCES0_PASSWORD
+            - name: RESTPROPERTIES_PRODUCTCATALOGBASEURL
+              value: http://product-catalog:8080
+            - name: RESTPROPERTIES_STORECATALOGBASEURL
+              value: http://store-catalog:8080
           ports:
             - containerPort: 8080
               name: cart-port
