@@ -13,7 +13,7 @@ spec:
         app: shopping-cart
     spec:
       containers:
-        - image: metatheory/shopping-cart:2022-12-03-14-59-56
+        - image: metatheory/shopping-cart:latest
           name: shopping-cart
           env:
             - name: KUMULUZEE_DATASOURCES0_CONNECTIONURL
